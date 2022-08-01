@@ -1,0 +1,21 @@
+name: 'Test Docker images'
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test_docker_images:
+    runs-on: ubuntu-latest
+    name: 'Test Docker images'
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v3
+      - name: 'Build docker images'
+        run: docker compose build
+      - name: 'Run test scripts'
+        run: docker compose run --rm tests
+      - name: 'Clean images up'
+        run: docker compose down
