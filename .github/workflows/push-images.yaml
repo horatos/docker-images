@@ -1,0 +1,13 @@
+name: 'Push images to container registry'
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  push_images:
+    runs-on: ubuntu-latest
+    name: 'Push Docker images'
+    steps:
+      - name: 'Login to ghcr.io'
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io horatos --password-stdin
