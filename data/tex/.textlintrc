@@ -1,0 +1,10 @@
+{
+	"plugins": ["latex2e"],
+	"rules": {
+		"preset-ja-technical-writing": {
+			"ja-no-mixed-period": {
+				"periodMark": "。"
+			}
+		}
+	}
+}
