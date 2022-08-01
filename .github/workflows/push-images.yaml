@@ -2,6 +2,8 @@ name: 'Push images to container registry'
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
