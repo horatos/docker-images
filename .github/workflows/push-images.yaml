@@ -15,6 +15,8 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
       - name: 'Build and push textlint-ja'
         run: |
-          docker build -t textlint-ja textlint-ja
-          docker tag textlint-ja ghcr.io/horatos/textlint-ja:latest
-          docker push ghcr.io/horatos/textlint-ja:latest
+          docker compose build
+          docker compose images
+          #docker build -t textlint-ja textlint-ja
+          #docker tag textlint-ja ghcr.io/horatos/textlint-ja:latest
+          #docker push ghcr.io/horatos/textlint-ja:latest
