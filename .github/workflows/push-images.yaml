@@ -16,7 +16,5 @@ jobs:
       - name: 'Build and push textlint-ja'
         run: |
           docker compose build
-          docker compose images
-          #docker build -t textlint-ja textlint-ja
-          #docker tag textlint-ja ghcr.io/horatos/textlint-ja:latest
-          #docker push ghcr.io/horatos/textlint-ja:latest
+          docker tag docker-images_textlint-ja ghcr.io/horatos/textlint-ja:latest
+          docker push ghcr.io/horatos/textlint-ja:latest
