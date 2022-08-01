@@ -10,4 +10,4 @@ jobs:
     name: 'Push Docker images'
     steps:
       - name: 'Login to ghcr.io'
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io horatos --password-stdin
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
