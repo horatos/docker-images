@@ -1,4 +1,7 @@
 services:
+  cluttex:
+    build:
+      context: cluttex
   textlint-ja:
     build:
       context: textlint-ja
