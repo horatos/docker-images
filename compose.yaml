@@ -1,4 +1,7 @@
 services:
+  cluttex:
+    build:
+      context: cluttex
   textlint-ja:
     build:
       context: textlint-ja
@@ -14,5 +17,8 @@ services:
       - type: bind
         source: tests/
         target: /home/tests/
+      - type: bind
+        source: data/
+        target: /home/data/
     working_dir: /home
     entrypoint: ["python3", "-m", "pytest"]

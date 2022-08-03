@@ -15,8 +15,13 @@ jobs:
         uses: actions/checkout@v3
       - name: 'Login to ghcr.io'
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
-      - name: 'Build and push textlint-ja'
+      - name: 'Build images'
+        run: docker compose build
+      - name: 'Push textlint-ja'
         run: |
-          docker compose build
           docker tag docker-images_textlint-ja ghcr.io/horatos/textlint-ja:latest
           docker push ghcr.io/horatos/textlint-ja:latest
+      - name: 'Push cluttex'
+        run: |
+          docker tag docker-images_cluttex ghcr.io/horatos/cluttex:latest
+          docker push ghcr.io/horatos/cluttex:latest
