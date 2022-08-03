@@ -25,11 +25,6 @@ def mount_data_tex_dir():
     return Mount(source=f'{HOST_PWD}/data/tex', target='/home/cluttex', type='bind')
 
 
-@fixture
-def mount_data_test_compile_watch_dir():
-    return Mount(source=f'{HOST_PWD}/data/test_compile_watch', target='/home/cluttex', type='bind')
-
-
 @contextmanager
 def run_container(client, image, command=None, **kwargs):
     container = client.containers.run(image, command, detach=True, **kwargs)
@@ -60,6 +55,7 @@ def test_ls(client, mount_data_tex_dir):
 
 
 def test_compile_oneshot(client, mount_data_tex_dir):
+    """一度だけコンパイルすることを確認する"""
     with run_container(client, IMAGE_NAME, "-e lualatex hello", mounts=[mount_data_tex_dir]) as container:
         result = container.wait()
         logs = container.logs().decode()
@@ -109,7 +105,14 @@ async def output_log_waiter(container):
 
 
 @pytest.mark.asyncio
-async def test_compile_watch(client, mount_data_test_compile_watch_dir):
+async def test_compile_watch(client):
+    """
+    `--watch`オプション付きで起動した時に動作を確認する
+
+    TeXファイルを書き換えた際に自動でコンパイルが走るかを確かめたい。
+    """
+    # /home/data/tex : 入力用のデータが置かれたディレクトリ
+    # /home/data/test_compile_watch : テスト用のディレクトリ
     data_root = Path("/home/data")
     tex_dir = data_root / 'tex'
     tmp_dir = data_root / 'test_compile_watch'
@@ -123,16 +126,17 @@ async def test_compile_watch(client, mount_data_test_compile_watch_dir):
 
     shutil.copyfile(hello_tex, tmp_dir / 'hello.tex')
 
+    # ログを見ながら操作をする必要があるので非同期に実装する。
     async with run_cluttex_watch() as container:
         waiter = output_log_waiter(container)
 
+        # hello.texは1ページからなるPDFを出力する。
         line1 = await asyncio.wait_for(waiter.__anext__(), timeout=60)
-        print(line1)
 
         shutil.copyfile(tex_dir / 'hello2.tex', tmp_dir / 'hello.tex')
 
+        # hello2.texは2ページからなるPDFを出力する。
         line2 = await asyncio.wait_for(waiter.__anext__(), timeout=60)
-        print(line2)
 
     assert '1 page' in line1
     assert '2 pages' in line2
