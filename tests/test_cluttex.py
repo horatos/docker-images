@@ -105,7 +105,7 @@ async def output_log_waiter(container):
 
 
 @pytest.mark.asyncio
-async def test_compile_watch(client):
+async def test_compile_watch():
     """
     `--watch`オプション付きで起動した時に動作を確認する
 
