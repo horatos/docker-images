@@ -66,6 +66,12 @@ def test_compile_oneshot(client, mount_data_tex_dir):
 
 @asynccontextmanager
 async def run_cluttex_watch():
+    """
+    `cluttex --watch -e lualatex hello`を実行するコンテナを起動する
+
+    この場合は並行してログを見たいので非同期にしてある。
+    あとでコンテナを削除するためにコンテクストマネージャとして実装している。
+    """
     docker = aiodocker.Docker()
     config = {
         'Image': IMAGE_NAME,
@@ -94,9 +100,13 @@ async def run_cluttex_watch():
 
 
 async def output_log_waiter(container):
+    """
+    Output writtenのログ行を見つけたらその行をgenerateするasync generator
+
+    [ERROR]を見つけた場合はその場でストップする
+    """
     log = container.log(stdout=True, stderr=True, follow=True)
     async for line in log:
-        await asyncio.sleep(0.01)
         print(line.encode())
         if line.startswith('Output written on hello.pdf'):
             yield line
