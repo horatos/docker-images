@@ -123,6 +123,8 @@ async def test_compile_watch():
     """
     # /home/data/tex : 入力用のデータが置かれたディレクトリ
     # /home/data/test_compile_watch : テスト用のディレクトリ
+    #
+    # 生成されたPDFを確認したいことがあるので、後で削除することはしない。
     data_root = Path("/home/data")
     tex_dir = data_root / 'tex'
     tmp_dir = data_root / 'test_compile_watch'
