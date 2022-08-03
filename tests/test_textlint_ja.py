@@ -50,7 +50,7 @@ def test_ls(client, mount_test_dir):
         result = container.wait()
         file_list = container.logs().decode().splitlines()
 
-    assert 'test_textlint-ja.py' in file_list
+    assert 'test_textlint_ja.py' in file_list
 
 
 def test_md_ja(client, mount_test_dir):
