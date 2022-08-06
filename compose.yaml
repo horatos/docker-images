@@ -17,6 +17,9 @@ services:
       - type: bind
         source: tests/
         target: /home/tests/
+      - type: bind # pylintにrcファイルを読み込ませるため
+        source: tests/pylintrc
+        target: /home/pylintrc
       - type: bind
         source: data/
         target: /home/data/
