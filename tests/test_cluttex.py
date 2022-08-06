@@ -1,3 +1,7 @@
+"""
+cluttexイメージをテストする。
+"""
+
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import contextmanager, asynccontextmanager
@@ -19,11 +23,13 @@ HOST_PWD: str = os.environ['HOST_PWD']
 
 @fixture
 def client() -> docker.DockerClient:
+    """Dockerのクライアントを作成するfixture"""
     return docker.from_env()
 
 
 @fixture
 def mount_data_tex_dir() -> Mount:
+    """data/texに対するマウントを作成する"""
     return Mount(source=f'{HOST_PWD}/data/tex', target='/home/cluttex', type='bind')
 
 
@@ -34,6 +40,9 @@ def run_container(
         command: Union[list[str], None] = None,
         **kwargs
 ) -> docker.models.containers.Container:
+    """
+    Dockerイメージを実行してコンテナを返す。
+    """
     container = client.containers.run(image, command, detach=True, **kwargs)
     try:
         yield container
@@ -53,7 +62,10 @@ def test_with_no_input(client: docker.DockerClient):
 
 def test_ls(client: docker.DockerClient, mount_data_tex_dir: Mount):
     """lsコマンドを実行してマウント位置が正しいことを確認する"""
-    with run_container(client, IMAGE_NAME, entrypoint="bash -c 'ls -a'", mounts=[mount_data_tex_dir]) as container:
+    with run_container(
+            client, IMAGE_NAME,
+            entrypoint="bash -c 'ls -a'", mounts=[mount_data_tex_dir]
+            ) as container:
         result = container.wait()
         file_list = container.logs().decode().splitlines()
 
@@ -63,7 +75,10 @@ def test_ls(client: docker.DockerClient, mount_data_tex_dir: Mount):
 
 def test_compile_oneshot(client: docker.DockerClient, mount_data_tex_dir: Mount):
     """一度だけコンパイルすることを確認する"""
-    with run_container(client, IMAGE_NAME, ["-e", "lualatex", "hello"], mounts=[mount_data_tex_dir]) as container:
+    with run_container(
+            client, IMAGE_NAME,
+            ["-e", "lualatex", "hello"], mounts=[mount_data_tex_dir]
+            ) as container:
         result = container.wait()
         logs = container.logs().decode()
 
