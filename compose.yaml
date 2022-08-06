@@ -17,8 +17,11 @@ services:
       - type: bind
         source: tests/
         target: /home/tests/
+      - type: bind # pylintにrcファイルを読み込ませるため
+        source: tests/pylintrc
+        target: /home/pylintrc
       - type: bind
         source: data/
         target: /home/data/
     working_dir: /home
-    entrypoint: ["python3", "-m", "pytest"]
+    entrypoint: ["python3"]

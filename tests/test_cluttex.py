@@ -1,32 +1,47 @@
-import asyncio
-import os
-import shutil
-from contextlib import contextmanager, asynccontextmanager
-from pathlib import Path
+"""
+cluttexイメージをテストする。
+"""
 
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import contextmanager, asynccontextmanager
+import os
+from pathlib import Path
+import shutil
+from typing import Union
+
+import aiodocker
 import docker
 from docker.types import Mount
-import aiodocker
 import pytest
 from pytest import fixture
 
-
-IMAGE_NAME='docker-images_cluttex'
-HOST_PWD=os.environ['HOST_PWD']
+IMAGE_NAME: str = 'docker-images_cluttex'
+HOST_PWD: str = os.environ['HOST_PWD']
 
 
 @fixture
-def client():
+def client() -> docker.DockerClient:
+    """Dockerのクライアントを作成するfixture"""
     return docker.from_env()
 
 
 @fixture
-def mount_data_tex_dir():
-    return Mount(source=f'{HOST_PWD}/data/tex', target='/home/cluttex', type='bind')
+def mount_data_tex_dir() -> Mount:
+    """data/texに対するマウントを作成する"""
+    return Mount(source=f'{HOST_PWD}/data/tex',
+                 target='/home/cluttex',
+                 type='bind')
 
 
 @contextmanager
-def run_container(client, image, command=None, **kwargs):
+def run_container(client: docker.DockerClient,
+                  image: str,
+                  command: Union[list[str], None] = None,
+                  **kwargs) -> docker.models.containers.Container:
+    """
+    Dockerイメージを実行してコンテナを返す。
+    """
     container = client.containers.run(image, command, detach=True, **kwargs)
     try:
         yield container
@@ -34,7 +49,7 @@ def run_container(client, image, command=None, **kwargs):
         container.remove()
 
 
-def test_with_no_input(client):
+def test_with_no_input(client: docker.DockerClient):
     """何も入力を渡さないときにステータス1で終了することを確認する"""
     with run_container(client, IMAGE_NAME) as container:
         result = container.wait()
@@ -44,9 +59,12 @@ def test_with_no_input(client):
     assert result['StatusCode'] == 1
 
 
-def test_ls(client, mount_data_tex_dir):
+def test_ls(client: docker.DockerClient, mount_data_tex_dir: Mount):
     """lsコマンドを実行してマウント位置が正しいことを確認する"""
-    with run_container(client, IMAGE_NAME, entrypoint="bash -c 'ls -a'", mounts=[mount_data_tex_dir]) as container:
+    with run_container(client,
+                       IMAGE_NAME,
+                       entrypoint="bash -c 'ls -a'",
+                       mounts=[mount_data_tex_dir]) as container:
         result = container.wait()
         file_list = container.logs().decode().splitlines()
 
@@ -54,9 +72,12 @@ def test_ls(client, mount_data_tex_dir):
     assert result['StatusCode'] == 0
 
 
-def test_compile_oneshot(client, mount_data_tex_dir):
+def test_compile_oneshot(client: docker.DockerClient,
+                         mount_data_tex_dir: Mount):
     """一度だけコンパイルすることを確認する"""
-    with run_container(client, IMAGE_NAME, "-e lualatex hello", mounts=[mount_data_tex_dir]) as container:
+    with run_container(client,
+                       IMAGE_NAME, ["-e", "lualatex", "hello"],
+                       mounts=[mount_data_tex_dir]) as container:
         result = container.wait()
         logs = container.logs().decode()
 
@@ -65,7 +86,8 @@ def test_compile_oneshot(client, mount_data_tex_dir):
 
 
 @asynccontextmanager
-async def run_cluttex_watch():
+async def run_cluttex_watch(
+) -> AsyncIterator[aiodocker.docker.DockerContainer]:
     """
     `cluttex --watch -e lualatex hello`を実行するコンテナを起動する
 
@@ -78,16 +100,14 @@ async def run_cluttex_watch():
         'Cmd': ['--watch', '-e', 'lualatex', 'hello'],
         'User': 'root',
         'HostConfig': {
-            'Mounts': [
-                {
-                    "Type": "bind",
-                    "Source": f'{HOST_PWD}/data/test_compile_watch',
-                    "Target": "/home/cluttex",
-                    "Mode": "",
-                    "RW": True,
-                    "Propagation": "rprivate",
-                }
-            ]
+            'Mounts': [{
+                "Type": "bind",
+                "Source": f'{HOST_PWD}/data/test_compile_watch',
+                "Target": "/home/cluttex",
+                "Mode": "",
+                "RW": True,
+                "Propagation": "rprivate",
+            }]
         }
     }
     container = await docker.containers.run(config)
@@ -99,7 +119,8 @@ async def run_cluttex_watch():
         await docker.close()
 
 
-async def output_log_waiter(container):
+async def output_log_waiter(
+        container: aiodocker.docker.DockerContainer) -> AsyncIterator[str]:
     """
     Output writtenのログ行を見つけたらその行をgenerateするasync generator
 
