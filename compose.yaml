@@ -21,4 +21,4 @@ services:
         source: data/
         target: /home/data/
     working_dir: /home
-    entrypoint: ["python3", "-m", "pytest"]
+    entrypoint: ["python3"]
