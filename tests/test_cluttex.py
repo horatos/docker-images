@@ -16,7 +16,6 @@ from docker.types import Mount
 import pytest
 from pytest import fixture
 
-
 IMAGE_NAME: str = 'docker-images_cluttex'
 HOST_PWD: str = os.environ['HOST_PWD']
 
@@ -30,16 +29,16 @@ def client() -> docker.DockerClient:
 @fixture
 def mount_data_tex_dir() -> Mount:
     """data/texに対するマウントを作成する"""
-    return Mount(source=f'{HOST_PWD}/data/tex', target='/home/cluttex', type='bind')
+    return Mount(source=f'{HOST_PWD}/data/tex',
+                 target='/home/cluttex',
+                 type='bind')
 
 
 @contextmanager
-def run_container(
-        client: docker.DockerClient,
-        image: str,
-        command: Union[list[str], None] = None,
-        **kwargs
-) -> docker.models.containers.Container:
+def run_container(client: docker.DockerClient,
+                  image: str,
+                  command: Union[list[str], None] = None,
+                  **kwargs) -> docker.models.containers.Container:
     """
     Dockerイメージを実行してコンテナを返す。
     """
@@ -62,10 +61,10 @@ def test_with_no_input(client: docker.DockerClient):
 
 def test_ls(client: docker.DockerClient, mount_data_tex_dir: Mount):
     """lsコマンドを実行してマウント位置が正しいことを確認する"""
-    with run_container(
-            client, IMAGE_NAME,
-            entrypoint="bash -c 'ls -a'", mounts=[mount_data_tex_dir]
-            ) as container:
+    with run_container(client,
+                       IMAGE_NAME,
+                       entrypoint="bash -c 'ls -a'",
+                       mounts=[mount_data_tex_dir]) as container:
         result = container.wait()
         file_list = container.logs().decode().splitlines()
 
@@ -73,12 +72,12 @@ def test_ls(client: docker.DockerClient, mount_data_tex_dir: Mount):
     assert result['StatusCode'] == 0
 
 
-def test_compile_oneshot(client: docker.DockerClient, mount_data_tex_dir: Mount):
+def test_compile_oneshot(client: docker.DockerClient,
+                         mount_data_tex_dir: Mount):
     """一度だけコンパイルすることを確認する"""
-    with run_container(
-            client, IMAGE_NAME,
-            ["-e", "lualatex", "hello"], mounts=[mount_data_tex_dir]
-            ) as container:
+    with run_container(client,
+                       IMAGE_NAME, ["-e", "lualatex", "hello"],
+                       mounts=[mount_data_tex_dir]) as container:
         result = container.wait()
         logs = container.logs().decode()
 
@@ -87,7 +86,8 @@ def test_compile_oneshot(client: docker.DockerClient, mount_data_tex_dir: Mount)
 
 
 @asynccontextmanager
-async def run_cluttex_watch() -> AsyncIterator[aiodocker.docker.DockerContainer]:
+async def run_cluttex_watch(
+) -> AsyncIterator[aiodocker.docker.DockerContainer]:
     """
     `cluttex --watch -e lualatex hello`を実行するコンテナを起動する
 
@@ -100,16 +100,14 @@ async def run_cluttex_watch() -> AsyncIterator[aiodocker.docker.DockerContainer]
         'Cmd': ['--watch', '-e', 'lualatex', 'hello'],
         'User': 'root',
         'HostConfig': {
-            'Mounts': [
-                {
-                    "Type": "bind",
-                    "Source": f'{HOST_PWD}/data/test_compile_watch',
-                    "Target": "/home/cluttex",
-                    "Mode": "",
-                    "RW": True,
-                    "Propagation": "rprivate",
-                }
-            ]
+            'Mounts': [{
+                "Type": "bind",
+                "Source": f'{HOST_PWD}/data/test_compile_watch',
+                "Target": "/home/cluttex",
+                "Mode": "",
+                "RW": True,
+                "Propagation": "rprivate",
+            }]
         }
     }
     container = await docker.containers.run(config)
@@ -121,7 +119,8 @@ async def run_cluttex_watch() -> AsyncIterator[aiodocker.docker.DockerContainer]
         await docker.close()
 
 
-async def output_log_waiter(container: aiodocker.docker.DockerContainer) -> AsyncIterator[str]:
+async def output_log_waiter(
+        container: aiodocker.docker.DockerContainer) -> AsyncIterator[str]:
     """
     Output writtenのログ行を見つけたらその行をgenerateするasync generator
 
