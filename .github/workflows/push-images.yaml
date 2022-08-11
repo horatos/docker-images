@@ -18,6 +18,7 @@ jobs:
       - name: 'Get the version from tag'
         run: echo '::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}'
         id: tag-version
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
       - name: 'Print the tag-version'
         run: |
           echo "${{ steps.tag-version.outputs.VERSION }}"
