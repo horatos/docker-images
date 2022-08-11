@@ -18,6 +18,10 @@ jobs:
       - name: 'Get the version from tag'
         run: echo '::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}'
         id: tag-version
+      - name: 'Print the tag-version'
+        run: |
+          echo '${ steps.tag-version.outputs.VERSION }'
+          exit 1
       - name: 'Login to ghcr.io'
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
       - name: 'Build images'
