@@ -20,14 +20,14 @@ jobs:
         id: tag-version
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
       - name: 'Set the docker image tag'
-        run: echo '::set-output name=tag::${TAG_VERSION:-latest}'
-        id: docker-image-tag
+        run: echo "::set-output name=tag::${TAG_VERSION:-latest}"
+        id: image-tag
         env:
           TAG_VERSION: ${{ steps.tag-version.outputs.VERSION }}
       - name: 'Print the tag-version'
         run: |
           echo "${{ steps.tag-version.outputs.VERSION }}"
-          echo "${{ steps.docker-image-tag.outputs.tag }}"
+          echo "${{ steps.image-tag.outputs.tag }}"
       - name: 'Login to ghcr.io'
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
       - name: 'Build images'
@@ -38,11 +38,11 @@ jobs:
           docker tag docker-images-textlint-ja ghcr.io/horatos/textlint-ja:$IMAGE_TAG
           docker push ghcr.io/horatos/textlint-ja:$IMAGE_TAG
         env:
-          IMAGE_TAG: ${{ steps.docker-image-tag.outputs.tag }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
       - name: 'Push cluttex'
         run: |
           docker image ls
           docker tag docker-images-cluttex ghcr.io/horatos/cluttex:$IMAGE_TAG
           docker push ghcr.io/horatos/cluttex:$IMAGE_TAG
         env:
-          IMAGE_TAG: ${{ steps.docker-image-tag.outputs.tag }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
