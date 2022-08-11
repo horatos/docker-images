@@ -19,9 +19,15 @@ jobs:
         run: echo '::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}'
         id: tag-version
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      - name: 'Set the docker image tag'
+        run: echo '::set-output name=tag::${TAG_VERSION:-latest}'
+        id: docker-image-tag
+        env:
+          TAG_VERSION: ${{ steps.tag-version.outputs.VERSION }}
       - name: 'Print the tag-version'
         run: |
           echo "${{ steps.tag-version.outputs.VERSION }}"
+          echo "${{ steps.docker-image-tag.outputs.tag }}"
           exit 1
       - name: 'Login to ghcr.io'
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u horatos --password-stdin
