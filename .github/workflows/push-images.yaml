@@ -19,9 +19,11 @@ jobs:
         run: docker compose build textlint-ja cluttex
       - name: 'Push textlint-ja'
         run: |
+          docker image ls
           docker tag docker-images_textlint-ja ghcr.io/horatos/textlint-ja:latest
           docker push ghcr.io/horatos/textlint-ja:latest
       - name: 'Push cluttex'
         run: |
+          docker image ls
           docker tag docker-images_cluttex ghcr.io/horatos/cluttex:latest
           docker push ghcr.io/horatos/cluttex:latest
