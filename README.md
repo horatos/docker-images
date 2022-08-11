@@ -17,3 +17,11 @@
 - textlint-rule-preset-japanese
 - textlint-rule-preset-ja-technical-writing
 - textlint-plugin-latex2e
+
+## tests
+
+上記のイメージをテストするためのイメージです。以下のコマンドでテストを実行できます。
+
+```
+docker compose run --rm tests -m pytest tests
+```
